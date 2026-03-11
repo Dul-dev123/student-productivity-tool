@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCSC Study Buddy</title>
+    <style>
+        :root {
+            --ucsc-blue: #003366;
+            --safe-green: #28a745;
+            --warning-orange: #fd7e14;
+            --danger-red: #dc3545;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #e9ecef; color: #333; }
+        nav { background: var(--ucsc-blue); padding: 15px; display: flex; justify-content: center; gap: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 1000; }
+        nav a { color: white; text-decoration: none; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+
+        .container { padding: 40px 20px; display: none; text-align: center; }
+        .active { display: block; animation: fadeIn 0.8s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Creative Verse Styling */
+        .verse { font-style: italic; color: var(--ucsc-blue); margin-bottom: 30px; font-size: 1.2rem; line-height: 1.6; }
+        .glow-text { text-shadow: 0 0 10px rgba(0, 51, 102, 0.3); animation: glow 3s infinite alternate; }
+        @keyframes glow { from { opacity: 0.8; } to { opacity: 1; } }
+
+        /* Rotating Logo */
+        .rotating-logo {
+            width: 160px; height: 160px; margin: 0 auto 20px;
+            border-radius: 50%; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: rotateContinuous 12s linear infinite;
+        }
+        @keyframes rotateContinuous { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Goal Circles */
+        #exam-list-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; padding: 20px; }
+        .exam-circle {
+            width: 280px; height: 280px; border-radius: 50%;
+            background: var(--glass); display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 8px solid #eee; transition: 0.5s; overflow: hidden; padding: 15px;
+        }
+
+        /* Olympic Countdown Units */
+        .olympic-timer { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+        .time-unit { background: #1a1a1a; color: white; padding: 8px; border-radius: 6px; min-width: 45px; }
+        .unit-label { font-size: 0.55rem; display: block; color: #999; margin-top: 3px; }
+
+        /* Blinking Urgency Levels */
+        .blink-green { border-color: var(--safe-green) !important; animation: b-g 2s infinite; }
+        .blink-orange { border-color: var(--warning-orange) !important; animation: b-o 1.5s infinite; }
+        .blink-red { border-color: var(--danger-red) !important; animation: b-r 0.8s infinite; }
+        @keyframes b-g { 0%, 100% { box-shadow: 0 0 10px var(--safe-green); } 50% { box-shadow: none; } }
+        @keyframes b-o { 0%, 100% { box-shadow: 0 0 20px var(--warning-orange); } 50% { box-shadow: none; } }
+        @keyframes b-r { 0%, 100% { box-shadow: 0 0 35px var(--danger-red); } 50% { box-shadow: none; } }
+
+        /* Timer UI */
+        .timer-btn-group { margin: 20px 0; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .mode-btn { background: white; color: var(--ucsc-blue); border: 2px solid var(--ucsc-blue); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .mode-btn.active-mode { background: var(--ucsc-blue); color: white; }
+        .action-btn { background: #333; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        
+        .urgent-msg { color: var(--danger-red); font-weight: 900; font-size: 0.85rem; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a onclick="showPage('home')">Dashboard</a>
+        <a onclick="showPage('countdown')">Add Exam</a>
+        <a onclick="showPage('timer')">Focus Timer</a>
+    </nav>
+
+    <div id="home" class="container active">
+        <h1 class="glow-text">UCSC Study Buddy</h1>
+        <p class="verse">"The ink of the scholar is holier than the blood of the martyr.<br>In these silent halls of code, your legacy begins."</p>
+        <img src="file:///C:/Users/user/Downloads/images.png" alt="Study Buddy Logo" class="rotating-logo">
+        <div id="exam-list-container"></div>
+    </div>
+
+    <div id="countdown" class="container">
+        <h2>Set Your Exam Date</h2>
+        <div style="background:white; padding:40px; display:inline-block; border-radius:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <input type="text" id="examName" placeholder="Subject Name" style="padding:12px; border:1px solid #ddd; border-radius:8px; width:250px;">
+            <input type="datetime-local" id="examDate" style="padding:12px; border:1px solid #ddd; border-radius:8px; margin-left:10px;">
+            <br><br>
+            <button onclick="addNewExam()" class="action-btn" style="background:var(--ucsc-blue)">Add to Dashboard</button>
+        </div>
+    </div>
+
+    <div id="timer" class="container">
+        <h2>Focus Timer</h2>
+        <p class="verse">"Select what you like and time would flow as you grind.<br>For every second captured, a dream draws closer."</p>
+        
+        <div class="timer-btn-group">
+            <button class="mode-btn active-mode" onclick="setTimerMode(25, this)">25 MINS</button>
+            <button class="mode-btn" onclick="setTimerMode(45, this)">45 MINS</button>
+            <button class="mode-btn" onclick="setTimerMode(60, this)">60 MINS</button>
+            <button class="mode-btn" style="border-color:var(--safe-green); color:var(--safe-green)" onclick="setTimerMode(10, this)">10 MIN BREAK</button>
+        </div>
+
+        <div class="exam-circle" style="margin: auto; width: 320px; height: 320px;">
+            <h1 id="pomo-display" style="font-size: 5rem; margin: 0; font-weight: 800;">25:00</h1>
+            <p id="pomo-status" style="font-weight:bold; letter-spacing:2px; color:#666">READY TO GRIND</p>
+            <div>
+                <button id="start-btn" class="action-btn" onclick="togglePomo()" style="background:var(--ucsc-blue)">START</button>
+                <button class="action-btn" onclick="resetPomo()" style="background:#666; margin-left:10px;">RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let exams = JSON.parse(localStorage.getItem('exams_list')) || [];
+        let pomoInterval;
+        let timeLeft = 25 * 60;
+        let isRunning = false;
+
+        // Audio Context for the Beep Beep Beep
+        function playBeep() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            let count = 0;
+            const interval = setInterval(() => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = "square";
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.1);
+                count++;
+                if (count >= 3) clearInterval(interval);
+            }, 300);
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'home') renderDashboard();
+        }
+
+        function addNewExam() {
+            const name = document.getElementById('examName').value;
+            const date = document.getElementById('examDate').value;
+            if(!name || !date) return alert("Please fill in all details.");
+            exams.push({ name, date, id: Date.now() });
+            localStorage.setItem('exams_list', JSON.stringify(exams));
+            document.getElementById('examName').value = '';
+            showPage('home');
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('exam-list-container');
+            container.innerHTML = exams.length === 0 ? "<p>The slate is clean. Go to 'Add Exam' to begin your journey.</p>" : '';
+            exams.forEach(exam => {
+                const circle = document.createElement('div');
+                circle.className = 'exam-circle';
+                circle.id = `circle-${exam.id}`;
+                container.appendChild(circle);
+            });
+            updateAllTimers();
+        }
+
+        function updateAllTimers() {
+            exams.forEach(exam => {
+                const circle = document.getElementById(`circle-${exam.id}`);
+                if(!circle) return;
+                const diff = new Date(exam.date).getTime() - new Date().getTime();
+                if (diff < 0) {
+                    circle.innerHTML = `<h3 style='margin:0'>${exam.name}</h3><p>VICTORY ACHIEVED</p><button onclick="deleteExam(${exam.id})" class="mode-btn">Clear</button>`;
+                    return;
+                }
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                circle.classList.remove('blink-green', 'blink-orange', 'blink-red');
+                let message = "";
+                if(d > 30) { circle.classList.add('blink-green'); message = "Steady wins the race."; }
+                else if(d <= 30 && d > 14) { circle.classList.add('blink-orange'); message = "The horizon nears!"; }
+                else { 
+                    circle.classList.add('blink-red'); 
+                    message = "<span class='urgent-msg'>HEY, MATE!!! STUDY HARD. YOUR EXAM'S SO CLOSE.</span>"; 
+                }
+
+                circle.innerHTML = `
+                    <h3 style="margin:0; color:var(--ucsc-blue); text-transform:uppercase; font-size:1rem;">${exam.name}</h3>
+                    <div class="olympic-timer">
+                        <div class="time-unit">${d}<span class="unit-label">DAYS</span></div>
+                        <div class="time-unit">${h}<span class="unit-label">HRS</span></div>
+                        <div class="time-unit">${m}<span class="unit-label">MINS</span></div>
+                        <div class="time-unit">${s}<span class="unit-label">SECS</span></div>
+                    </div>
+                    <div style="height:45px; display:flex; align-items:center;">${message}</div>
+                    <button onclick="deleteExam(${exam.id})" style="background:none; border:none; color:#cc0000; cursor:pointer; font-size:0.7rem; font-weight:bold;">[ REMOVE ]</button>
+                `;
+            });
+        }
+
+        function deleteExam(id) {
+            exams = exams.filter(e => e.id !== id);
+            localStorage.setItem('exams_list', JSON.stringify(exams));
+            renderDashboard();
+        }
+
+        // Pomodoro Modes
+        function setTimerMode(mins, btn) {
+            resetPomo();
+            timeLeft = mins * 60;
+            updatePomoDisplay();
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active-mode'));
+            btn.classList.add('active-mode');
+        }
+
+        function togglePomo() {
+            if(isRunning) {
+                clearInterval(pomoInterval);
+                document.getElementById('start-btn').innerText = "RESUME";
+                document.getElementById('pomo-status').innerText = "PAUSED";
+                isRunning = false;
+            } else {
+                isRunning = true;
+                document.getElementById('start-btn').innerText = "PAUSE";
+                document.getElementById('pomo-status').innerText = "GRINDING...";
+                pomoInterval = setInterval(() => {
+                    if (timeLeft <= 0) {
+                        clearInterval(pomoInterval);
+                        isRunning = false;
+                        playBeep();
+                        alert("Session Complete!");
+                        resetPomo();
+                    } else {
+                        timeLeft--;
+                        updatePomoDisplay();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetPomo() {
+            clearInterval(pomoInterval);
+            isRunning = false;
+            pomoInterval = null;
+            document.getElementById('start-btn').innerText = "START";
+            document.getElementById('pomo-status').innerText = "READY TO GRIND";
+            updatePomoDisplay();
+        }
+
+        function updatePomoDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('pomo-display').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        setInterval(updateAllTimers, 1000);
+        window.onload = renderDashboard;
+    </script>
+</body>
+</html>
